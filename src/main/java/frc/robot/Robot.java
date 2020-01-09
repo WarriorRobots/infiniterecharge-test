@@ -8,6 +8,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -21,11 +22,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  static int ID_SHOOTER = 1;
+  static final int ID_SHOOTER = 1;
   static TalonSRX shooter;
 
-  // static double RPM=0;
-  static double voltage=0;
+  static final double MAX_VELOCITY = 4400;
+  static double RPM=0;
+  // static double voltage=0;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -33,9 +35,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    SmartDashboard.putNumber("Voltage", 0);
-    // SmartDashboard.putNumber("RPM", 0);
+    // SmartDashboard.putNumber("Voltage", 0);
+    SmartDashboard.putNumber("RPM", 0);
     shooter = new TalonSRX(ID_SHOOTER);
+    shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder,0, 10);
+    shooter.setSensorPhase(false);
+    shooter.config_kF(0, 1/MAX_VELOCITY, 10);
     // shooter.config_kP(0, .1, 10);
   }
 
@@ -49,8 +54,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // RPM = SmartDashboard.getNumber("RPM", 0);
-    voltage = SmartDashboard.getNumber("Voltage", 0);
+    RPM = SmartDashboard.getNumber("RPM", 0);
+    // voltage = SmartDashboard.getNumber("Voltage", 0);
   }
 
   /**
@@ -58,7 +63,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    // shooter.set(ControlMode.Velocity, RPM);
-    shooter.set(ControlMode.PercentOutput, voltage);
+    shooter.set(ControlMode.Velocity, RPM);
+    // shooter.set(ControlMode.PercentOutput, voltage);
   }
 }
