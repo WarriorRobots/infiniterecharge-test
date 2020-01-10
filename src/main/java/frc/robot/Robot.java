@@ -31,7 +31,7 @@ public class Robot extends TimedRobot {
 
   static final double MAX_VELOCITY = 4400; // guess from observations on 20/01/09
   static double RPM=0;
-  // static double voltage=0;
+  static double voltage=0;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -39,12 +39,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    // SmartDashboard.putNumber("Voltage", 0);
-    SmartDashboard.putNumber("Desired RPM", 0);
+    SmartDashboard.putNumber("Voltage", 0);
+    // SmartDashboard.putNumber("Desired RPM", 0);
     shooter = new TalonSRX(ID_SHOOTER);
     shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
     shooter.setSensorPhase(false);
-    shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_MAX_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
+    // shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_MAX_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
     // shooter.config_kP(0, .1, 10);
   }
 
@@ -58,13 +58,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    RPM = SmartDashboard.getNumber("Desired RPM", 0);
+    // RPM = SmartDashboard.getNumber("Desired RPM", 0);
     SmartDashboard.putNumber("Encoder", shooter.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Native units/100ms", shooter.getSelectedSensorVelocity());
-    SmartDashboard.putNumber("Actual RPM", shooter.getSelectedSensorVelocity()*600/CLICKS_PER_REV);
+    SmartDashboard.putNumber("Native units/100ms", shooter.getSelectedSensorVelocity(0));
+    SmartDashboard.putNumber("Actual RPM", shooter.getSelectedSensorVelocity(0)*600/CLICKS_PER_REV);
     // (native / 100ms) * (600ms / m) * (rev/native) = rev / m
 
-    // voltage = SmartDashboard.getNumber("Voltage", 0);
+    voltage = SmartDashboard.getNumber("Voltage", 0);
   }
 
   /**
@@ -72,7 +72,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    shooter.set(ControlMode.Velocity, RPM);
-    // shooter.set(ControlMode.PercentOutput, voltage);
+    // shooter.set(ControlMode.Velocity, RPM);
+    shooter.set(ControlMode.PercentOutput, voltage);
   }
 }
