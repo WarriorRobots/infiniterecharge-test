@@ -25,7 +25,11 @@ public class Robot extends TimedRobot {
   static final int ID_SHOOTER = 1;
   static TalonSRX shooter;
 
-  static final double MAX_VELOCITY = 4400;
+  static final int CLICKS_PER_REV = 4096; // https://phoenix-documentation.readthedocs.io/en/latest/ch14_MCSensor.html#sensor-resolution
+  static final double ESTIMATED_VOLTAGE = 1; // Typical motor output as percent
+  static final int NATIVE_MAX_VELOCITY = 9326; // Native units per 100ms at typical motor output TODO calculate native units / 100ms at 100%
+
+  static final double MAX_VELOCITY = 4400; // guess from observations on 20/01/09
   static double RPM=0;
   // static double voltage=0;
 
@@ -36,11 +40,11 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // SmartDashboard.putNumber("Voltage", 0);
-    SmartDashboard.putNumber("RPM", 0);
+    SmartDashboard.putNumber("Desired RPM", 0);
     shooter = new TalonSRX(ID_SHOOTER);
-    shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder,0, 10);
+    shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
     shooter.setSensorPhase(false);
-    shooter.config_kF(0, 1/MAX_VELOCITY, 10);
+    shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_MAX_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
     // shooter.config_kP(0, .1, 10);
   }
 
@@ -54,7 +58,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    RPM = SmartDashboard.getNumber("RPM", 0);
+    RPM = SmartDashboard.getNumber("Desired RPM", 0);
+    SmartDashboard.putNumber("Encoder", shooter.getSelectedSensorPosition());
+    SmartDashboard.putNumber("Native units/100ms", shooter.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("Actual RPM", shooter.getSelectedSensorVelocity()*600/CLICKS_PER_REV);
+    // (native / 100ms) * (600ms / m) * (rev/native) = rev / m
+
     // voltage = SmartDashboard.getNumber("Voltage", 0);
   }
 
