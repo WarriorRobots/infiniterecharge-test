@@ -26,10 +26,13 @@ public class Robot extends TimedRobot {
   static TalonSRX shooter;
 
   static final int CLICKS_PER_REV = 4096; // https://phoenix-documentation.readthedocs.io/en/latest/ch14_MCSensor.html#sensor-resolution
-  static final double ESTIMATED_VOLTAGE = 1; // Typical motor output as percent
-  static final int NATIVE_MAX_VELOCITY = 9326; // Native units per 100ms at typical motor output TODO calculate native units / 100ms at 100%
+  static final double ESTIMATED_VOLTAGE = .85; // Typical motor output as percent
+  static final int NATIVE_ESTIMATED_VELOCITY = 25000; // Native units per 100ms at typical motor output
+  static final double GEAROUT_GEARIN = 22.0/16.0;
+  // WHEEL = RATIO * ENCODER
+  // OUTSIDE * INSIDE/OUTSIDE = INSIDE
 
-  static final double MAX_VELOCITY = 4400; // guess from observations on 20/01/09
+  // static final double MAX_VELOCITY = 4400; // guess from observations on 20/01/09
   static double RPM=0;
   static double voltage=0;
 
@@ -40,12 +43,12 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     SmartDashboard.putNumber("Voltage", 0);
-    // SmartDashboard.putNumber("Desired RPM", 0);
+    SmartDashboard.putNumber("Desired RPM of wheel", 0);
     shooter = new TalonSRX(ID_SHOOTER);
     shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
-    shooter.setSensorPhase(false);
-    // shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_MAX_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
-    // shooter.config_kP(0, .1, 10);
+    shooter.setSensorPhase(true);
+    shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_ESTIMATED_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
+    shooter.config_kP(0, .07, 10);
   }
 
   /**
@@ -58,13 +61,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // RPM = SmartDashboard.getNumber("Desired RPM", 0);
+    RPM = SmartDashboard.getNumber("Desired RPM of wheel", 0);
+    SmartDashboard.putNumber("Motor Gain", shooter.getMotorOutputPercent());
     SmartDashboard.putNumber("Encoder", shooter.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Native units/100ms", shooter.getSelectedSensorVelocity(0));
-    SmartDashboard.putNumber("Actual RPM", shooter.getSelectedSensorVelocity(0)*600/CLICKS_PER_REV);
+    SmartDashboard.putNumber("Native units/100ms", shooter.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("RPM at Encoder", shooter.getSelectedSensorVelocity()*600/CLICKS_PER_REV);
     // (native / 100ms) * (600ms / m) * (rev/native) = rev / m
+    SmartDashboard.putNumber("RPM at Wheel", shooter.getSelectedSensorVelocity()*600/CLICKS_PER_REV*GEAROUT_GEARIN);
 
-    voltage = SmartDashboard.getNumber("Voltage", 0);
+    // voltage = SmartDashboard.getNumber("Voltage", 0);
   }
 
   /**
@@ -72,7 +77,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    // shooter.set(ControlMode.Velocity, RPM);
-    shooter.set(ControlMode.PercentOutput, voltage);
+    shooter.set(ControlMode.Velocity, RPM*CLICKS_PER_REV/600/GEAROUT_GEARIN);
+    // shooter.set(ControlMode.PercentOutput, voltage);
   }
 }
