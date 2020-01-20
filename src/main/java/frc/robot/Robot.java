@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
     shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
     shooter.setSensorPhase(true);
     shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_ESTIMATED_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
-    shooter.config_kP(0, .32, 10);
+    shooter.config_kP(0, .25, 10);
     
     slave = new TalonSRX(ID_SLAVE);
     slave.follow(shooter);
