@@ -10,6 +10,7 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,7 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
   static final int ID_SHOOTER = 1;
   static final int ID_SLAVE = 5;
-  static TalonSRX shooter, slave;
+  static WPI_TalonSRX shooter, slave;
 
   static final int CLICKS_PER_REV = 4096; // https://phoenix-documentation.readthedocs.io/en/latest/ch14_MCSensor.html#sensor-resolution
   static final double ESTIMATED_VOLTAGE = .85; // Typical motor output as percent
@@ -45,7 +46,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     SmartDashboard.putNumber("Voltage", 0);
     SmartDashboard.putNumber("Desired RPM of wheel", 0);
-    shooter = new TalonSRX(ID_SHOOTER);
+    shooter = new WPI_TalonSRX(ID_SHOOTER);
     
     shooter.setInverted(false);
     shooter.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
@@ -53,7 +54,7 @@ public class Robot extends TimedRobot {
     shooter.config_kF(0, ESTIMATED_VOLTAGE*1023/NATIVE_ESTIMATED_VELOCITY, 10); // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#calculating-velocity-feed-forward-gain-kf
     shooter.config_kP(0, .25, 10);
     
-    slave = new TalonSRX(ID_SLAVE);
+    slave = new WPI_TalonSRX(ID_SLAVE);
     slave.follow(shooter);
     slave.setInverted(true);
   }
